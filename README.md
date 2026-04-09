@@ -62,8 +62,8 @@ The CLI replaces only the content between those markers.
 ```json
 {
   "scripts": {
-    "generate:pages": "auspages",
-    "generate:pages:force": "auspages --force"
+    "generate:pages": "auto-svelte-pages",
+    "generate:pages:force": "auto-svelte-pages --force"
   }
 }
 ```
