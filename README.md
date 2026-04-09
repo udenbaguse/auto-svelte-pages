@@ -14,10 +14,10 @@ Generate Svelte `entry` + `component` files from root HTML pages and auto-sync V
 ## Install
 
 ```bash
-npm i -D auto-svelte-pages
+npm i -D github:udenbaguse/auto-svelte-pages
 ```
 
-## Usage
+<!-- ## Usage
 
 ```bash
 npx auto-svelte-pages
@@ -27,7 +27,7 @@ With overwrite:
 
 ```bash
 npx auto-svelte-pages --force
-```
+``` -->
 
 ## Required Vite Markers
 
