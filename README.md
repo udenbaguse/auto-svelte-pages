@@ -1,4 +1,5 @@
-# auto-svelte-pages
+# AUSPAGES
+## auto-svelte-pages
 
 Generate Svelte `entry` + `component` files from root HTML pages and auto-sync Vite multi-page `rollupOptions.input`.
 
@@ -14,7 +15,7 @@ Generate Svelte `entry` + `component` files from root HTML pages and auto-sync V
 ## Install
 
 ```bash
-npm i -D github:udenbaguse/auto-svelte-pages
+npm i -D github:udenbaguse/auspages
 ```
 
 <!-- ## Usage
