@@ -34,10 +34,13 @@ npx auto-svelte-pages --force
 In `vite.config.js`, add this marker block inside `build.rollupOptions.input`:
 
 ```js
-input: {
-  // AUTO-GENERATED VITE INPUT START
-  // AUTO-GENERATED VITE INPUT END
-}
+ build: {
+    rollupOptions: {
+      input: {
+
+      },
+    },
+  },
 ```
 
 The CLI replaces only the content between those markers.
@@ -64,17 +67,6 @@ The CLI replaces only the content between those markers.
   }
 }
 ```
-
-## Add Vite Build
- ``` vite.config.js
- build: {
-    rollupOptions: {
-      input: {
-
-      },
-    },
-  },
-  ```
 
 ## Programmatic API
 
