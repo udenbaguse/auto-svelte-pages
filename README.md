@@ -82,7 +82,7 @@ npm run generate:all
 Watch mode:
 
 ```bash
-npm run generate: -- --watch
+npm run generate:watch
 ```
 
 ## Programmatic API
