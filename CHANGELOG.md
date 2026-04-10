@@ -24,6 +24,10 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 - In targeted mode, Vite input update now upserts only selected targets without full re-scan.
 
 ## [1.1.0] - 2026-04-10
+
+### Rename auto-svelte-pages to auspages
+
+### Added
 - HTML boilerplate templating for empty root HTML files:
   - `<div id="app"></div>`
   - `<script type="module" src="./src/entry/<name>.js"></script>`
