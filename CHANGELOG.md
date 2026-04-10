@@ -4,6 +4,24 @@ All notable changes to `auto-svelte-pages` will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [2.0.0] - 2026-04-10
+
+### Added
+- Targeted scan by single file without full project scan:
+  - `auto-svelte-pages naruto`
+- Targeted scan by multiple files without full project scan:
+  - `auto-svelte-pages naruto sasuke.html`
+- NPM script alias for full scan mode:
+  - `npm run generate:all`
+
+### Removed
+- `--force` option removed.
+- `--force-html` option removed.
+- Overwrite behavior removed from runtime generation flow.
+
+### Changed
+- Existing HTML/entry/component files are always skipped if already present.
+- In targeted mode, Vite input update now upserts only selected targets without full re-scan.
 
 ## [1.1.0] - 2026-04-10
 - HTML boilerplate templating for empty root HTML files:

@@ -91,10 +91,14 @@ async function listHtmlFilesRecursively(rootDir, dir, ignoreDirs) {
 }
 
 function createInputBlock(relativeHtmlPaths) {
-  const lines = relativeHtmlPaths.map((relativePath) => {
-    const key = toViteInputKey(relativePath);
-    return `        ${key}: '${normalizePath(relativePath)}',`;
-  });
+  const pathByKey = new Map();
+  for (const relativePath of relativeHtmlPaths) {
+    pathByKey.set(toViteInputKey(relativePath), normalizePath(relativePath));
+  }
+
+  const lines = [...pathByKey.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([key, relativePath]) => `        ${key}: '${relativePath}',`);
 
   return [
     `        ${INPUT_START_MARKER}`,
@@ -103,7 +107,63 @@ function createInputBlock(relativeHtmlPaths) {
   ].join('\n');
 }
 
-async function writeIfNeeded(filePath, content, forceWrite) {
+function parseExistingInputEntries(blockContent) {
+  const entries = new Map();
+  const entryPattern = /([a-z0-9_]+)\s*:\s*'([^']+)'/gi;
+  let match = entryPattern.exec(blockContent);
+
+  while (match) {
+    entries.set(match[1], match[2]);
+    match = entryPattern.exec(blockContent);
+  }
+
+  return entries;
+}
+
+function getMarkerPattern(escapedStart, escapedEnd) {
+  return new RegExp(
+    `^[ \\t]*${escapedStart}[\\s\\S]*?^[ \\t]*${escapedEnd}`,
+    'm',
+  );
+}
+
+function normalizeTargetFile(target) {
+  return target.endsWith('.html') ? target : `${target}.html`;
+}
+
+async function resolveRootTargetHtmlFiles(rootDir, targets) {
+  const resolved = [];
+  for (const target of targets) {
+    const cleanTarget = target.trim();
+    if (!cleanTarget) {
+      continue;
+    }
+    const htmlFile = normalizeTargetFile(cleanTarget);
+
+    const targetPath = path.join(rootDir, htmlFile);
+    const relative = path.relative(rootDir, targetPath);
+    const isRootFile = !relative.includes(path.sep);
+
+    if (!isRootFile) {
+      throw new Error(`Target must be a root HTML file: ${target}`);
+    }
+
+    try {
+      const stats = await fs.stat(targetPath);
+      if (!stats.isFile()) {
+        throw new Error(`Target is not a file: ${target}`);
+      }
+    } catch {
+      throw new Error(`Target HTML file not found: ${htmlFile}`);
+    }
+
+    resolved.push(htmlFile);
+  }
+
+  return [...new Set(resolved)];
+}
+
+async function writeIfNeeded(filePath, content) {
   let exists = true;
   try {
     await fs.access(filePath);
@@ -111,32 +171,29 @@ async function writeIfNeeded(filePath, content, forceWrite) {
     exists = false;
   }
 
-  if (!exists || forceWrite) {
+  if (!exists) {
     await fs.writeFile(filePath, content, 'utf8');
-    return exists ? 'overwritten' : 'created';
+    return 'created';
   }
 
   return 'skipped';
 }
 
-async function writeHtmlBoilerplateIfNeeded(htmlPath, pageName, forceHtml) {
+async function writeHtmlBoilerplateIfNeeded(htmlPath, pageName) {
   const existingContent = await fs.readFile(htmlPath, 'utf8');
-  if (existingContent.trim().length > 0 && !forceHtml) {
+  if (existingContent.trim().length > 0) {
     return 'skipped';
   }
 
   await fs.writeFile(htmlPath, htmlTemplate(pageName), 'utf8');
-  return existingContent.trim().length > 0 ? 'overwritten' : 'templated';
+  return 'templated';
 }
 
 async function updateViteInput({ rootDir, viteConfigPath, htmlFiles }) {
   const viteContent = await fs.readFile(viteConfigPath, 'utf8');
   const escapedStart = INPUT_START_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const escapedEnd = INPUT_END_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const markerPattern = new RegExp(
-    `^[ \\t]*${escapedStart}[\\s\\S]*?^[ \\t]*${escapedEnd}`,
-    'm',
-  );
+  const markerPattern = getMarkerPattern(escapedStart, escapedEnd);
 
   if (!markerPattern.test(viteContent)) {
     throw new Error(
@@ -151,23 +208,53 @@ async function updateViteInput({ rootDir, viteConfigPath, htmlFiles }) {
   await fs.writeFile(viteConfigPath, nextContent, 'utf8');
 }
 
+async function upsertViteInputTargets({ rootDir, viteConfigPath, htmlTargets }) {
+  const viteContent = await fs.readFile(viteConfigPath, 'utf8');
+  const escapedStart = INPUT_START_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedEnd = INPUT_END_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const markerPattern = getMarkerPattern(escapedStart, escapedEnd);
+  const match = viteContent.match(markerPattern);
+
+  if (!match) {
+    throw new Error(
+      `Cannot update Vite input. Missing markers in ${path.relative(
+        rootDir,
+        viteConfigPath,
+      )}: "${INPUT_START_MARKER}" and "${INPUT_END_MARKER}".`,
+    );
+  }
+
+  const existingEntries = parseExistingInputEntries(match[0]);
+  for (const target of htmlTargets) {
+    existingEntries.set(toViteInputKey(target), normalizePath(target));
+  }
+
+  const mergedPaths = [...existingEntries.values()];
+  const nextContent = viteContent.replace(markerPattern, createInputBlock(mergedPaths));
+  await fs.writeFile(viteConfigPath, nextContent, 'utf8');
+}
+
 export async function generatePages(userOptions = {}) {
   const rootDir = path.resolve(userOptions.rootDir ?? process.cwd());
   const srcDir = path.join(rootDir, userOptions.srcDir ?? 'src');
   const entryDir = path.join(srcDir, userOptions.entryDir ?? 'entry');
   const componentDir = path.join(srcDir, userOptions.componentDir ?? 'component');
   const viteConfigPath = path.join(rootDir, userOptions.viteConfig ?? 'vite.config.js');
-  const forceWrite = Boolean(userOptions.force);
   const updateVite = userOptions.updateVite !== false;
-  const forceHtml = userOptions.forceHtml === true;
   const includeNestedHtml = userOptions.includeNestedHtml !== false;
   const ignoreDirs = new Set(userOptions.ignoreDirs ?? ['.git', 'node_modules', 'dist']);
   const appCssImportPath = userOptions.appCssImportPath ?? '../app.css';
+  const targetFiles = Array.isArray(userOptions.targets) ? userOptions.targets : [];
 
-  const rootEntries = await fs.readdir(rootDir, { withFileTypes: true });
-  const rootHtmlFiles = rootEntries
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.html'))
-    .map((entry) => entry.name);
+  let rootHtmlFiles = [];
+  if (targetFiles.length > 0) {
+    rootHtmlFiles = await resolveRootTargetHtmlFiles(rootDir, targetFiles);
+  } else {
+    const rootEntries = await fs.readdir(rootDir, { withFileTypes: true });
+    rootHtmlFiles = rootEntries
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.html'))
+      .map((entry) => entry.name);
+  }
 
   await fs.mkdir(entryDir, { recursive: true });
   await fs.mkdir(componentDir, { recursive: true });
@@ -183,31 +270,36 @@ export async function generatePages(userOptions = {}) {
     const htmlResult = await writeHtmlBoilerplateIfNeeded(
       htmlPath,
       baseName,
-      forceHtml,
     );
     logs.push(`${htmlResult.toUpperCase()} ${path.relative(rootDir, htmlPath)}`);
 
     const entryResult = await writeIfNeeded(
       entryPath,
       entryTemplate(componentName, appCssImportPath),
-      forceWrite,
     );
     logs.push(`${entryResult.toUpperCase()} ${path.relative(rootDir, entryPath)}`);
 
     const componentResult = await writeIfNeeded(
       componentPath,
       componentTemplate(componentName),
-      forceWrite,
     );
     logs.push(`${componentResult.toUpperCase()} ${path.relative(rootDir, componentPath)}`);
   }
 
   if (updateVite) {
-    const htmlFiles = includeNestedHtml
-      ? await listHtmlFilesRecursively(rootDir, rootDir, ignoreDirs)
-      : rootHtmlFiles;
-    htmlFiles.sort((a, b) => a.localeCompare(b));
-    await updateViteInput({ rootDir, viteConfigPath, htmlFiles });
+    if (targetFiles.length > 0) {
+      await upsertViteInputTargets({
+        rootDir,
+        viteConfigPath,
+        htmlTargets: rootHtmlFiles,
+      });
+    } else {
+      const htmlFiles = includeNestedHtml
+        ? await listHtmlFilesRecursively(rootDir, rootDir, ignoreDirs)
+        : rootHtmlFiles;
+      htmlFiles.sort((a, b) => a.localeCompare(b));
+      await updateViteInput({ rootDir, viteConfigPath, htmlFiles });
+    }
     logs.push(`UPDATED ${path.relative(rootDir, viteConfigPath)} Vite input`);
   }
 

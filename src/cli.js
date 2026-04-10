@@ -2,23 +2,13 @@ import { generatePages } from './generator.js';
 
 function parseArgs(argv) {
   const options = {
-    force: false,
     updateVite: true,
     includeNestedHtml: true,
+    targets: [],
   };
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-
-    if (arg === '--force') {
-      options.force = true;
-      continue;
-    }
-
-    if (arg === '--force-html') {
-      options.forceHtml = true;
-      continue;
-    }
 
     if (arg === '--no-vite') {
       options.updateVite = false;
@@ -71,7 +61,11 @@ function parseArgs(argv) {
       continue;
     }
 
-    throw new Error(`Unknown argument: ${arg}`);
+    if (arg.startsWith('--')) {
+      throw new Error(`Unknown argument: ${arg}`);
+    }
+
+    options.targets.push(arg);
   }
 
   return options;
@@ -81,11 +75,9 @@ function printHelp() {
   console.log(`auto-svelte-pages
 
 Usage:
-  auto-svelte-pages [options]
+  auto-svelte-pages [options] [file1 file2 ...]
 
 Options:
-  --force              Overwrite generated entry/component files if they already exist
-  --force-html         Overwrite HTML files with boilerplate (default: only empty HTML files)
   --no-vite            Skip updating vite.config.js input block
   --root-only          Use root HTML files only for Vite input (no recursive scan)
   --root <path>        Project root (default: current directory)
@@ -95,6 +87,11 @@ Options:
   --vite-config <file> Vite config path from root (default: vite.config.js)
   --css-import <path>  CSS import path used in generated entry file (default: ../app.css)
   --help, -h           Show help
+
+Examples:
+  auto-svelte-pages
+  auto-svelte-pages naruto
+  auto-svelte-pages naruto sasuke.html
 `);
 }
 

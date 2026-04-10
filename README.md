@@ -5,9 +5,10 @@ Generate Svelte `entry` + `component` files from root HTML pages and auto-sync V
 ## Features
 
 - Scan root `*.html` files and generate:
+  - HTML boilerplate (`#app` + script to `./src/entry/<name>.js`) for empty HTML files
   - `src/entry/<name>.js`
   - `src/component/<Name>.svelte`
-- Optional overwrite mode (`--force`)
+- Targeted mode: generate only selected files (`auto-svelte-pages file1 file2`)
 - Auto-update `vite.config.js` input block using markers
 - Reusable as CLI or JavaScript module
 
@@ -17,34 +18,25 @@ Generate Svelte `entry` + `component` files from root HTML pages and auto-sync V
 npm i -D github:udenbaguse/auto-svelte-pages
 ```
 
-<!-- ## Usage
-
-```bash
-npx auto-svelte-pages
-```
-
-With overwrite:
-
-```bash
-npx auto-svelte-pages --force
-``` -->
-
 ## Required Vite Markers
 
 In `vite.config.js`, add this marker block inside `build.rollupOptions.input`:
 
 ```js
-input: {
-  // AUTO-GENERATED VITE INPUT START
-  // AUTO-GENERATED VITE INPUT END
-}
+ build: {
+    rollupOptions: {
+      input: {
+        // AUTO-GENERATED VITE INPUT START
+        // AUTO-GENERATED VITE INPUT END
+      },
+    },
+  },
 ```
 
 The CLI replaces only the content between those markers.
 
 ## CLI Options
 
-- `--force` overwrite generated entry/component files
 - `--no-vite` skip updating `vite.config.js`
 - `--root-only` only use root HTML files for Vite input (no recursive scan)
 - `--root <path>` project root (default: current directory)
@@ -59,35 +51,43 @@ The CLI replaces only the content between those markers.
 ```json
 {
   "scripts": {
-    "generate:pages": "auto-svelte-pages",
-    "generate:pages:force": "auto-svelte-pages --force"
+    "generate:all": "auto-svelte-pages",
+    "generate:": "auto-svelte-pages"
   }
 }
 ```
 
-## Add Vite Build
- ``` vite.config.js
- build: {
-    rollupOptions: {
-      input: {
 
-      },
-    },
-  },
-  ```
+## Use
+
+Single file:
+
+```bash
+npm run generate: -- file
+```
+
+Multiple files:
+
+```bash
+npm run generate: -- file1 file2
+```
+
+All files:
+
+```bash
+npm run generate:all
+```
 
 ## Programmatic API
 
 ```js
-import { generatePages } from 'auto-svelte-pages';
+import { generatePages } from "auto-svelte-pages";
 
 await generatePages({
   force: false,
   updateVite: true,
 });
 ```
-
-
 
 ## Changelog
 
