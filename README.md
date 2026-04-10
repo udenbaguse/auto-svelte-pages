@@ -78,6 +78,12 @@ All files:
 npm run generate:all
 ```
 
+Watch mode:
+
+```bash
+npm run generate: -- --watch
+```
+
 ## Programmatic API
 
 ```js

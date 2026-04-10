@@ -4,6 +4,12 @@ All notable changes to `auto-svelte-pages` will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [2.1.0] - 2026-04-10
+
+### Added
+- `--watch` mode to monitor root HTML files and regenerate automatically on changes.
+
+
 ## [2.0.0] - 2026-04-10
 
 ### Added
