@@ -52,7 +52,8 @@ The CLI replaces only the content between those markers.
 {
   "scripts": {
     "generate:all": "auto-svelte-pages",
-    "generate:": "auto-svelte-pages"
+    "generate:": "auto-svelte-pages",
+    "generate:watch:ts": "auto-svelte-pages-ts --watch"
   }
 }
 ```
