@@ -4,6 +4,20 @@ All notable changes to `auto-svelte-pages` will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+
+## [2.2.2] - 2026-04-11
+
+### Added
+- Config file support via `auto-svelte-pages.config.js`.
+- New `--config <file>` option to load config from a custom path.
+- Configurable defaults for:
+  - directories (`src`, `entry`, `component`)
+  - Vite input markers (`start`, `end`)
+  - CSS import path for generated entry files
+
+### Changed
+- Option priority is now: CLI args > config file > built-in defaults.
+
 ## [2.1.2] - 2026-04-10
 
 ### Added

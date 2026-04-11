@@ -59,6 +59,32 @@ The CLI replaces only the content between those markers.
 ```
 
 
+## Config File
+
+Create `auto-svelte-pages.config.js` in project root:
+
+```js
+export default {
+  dirs: {
+    src: 'src',
+    entry: 'entry',
+    component: 'component',
+  },
+  cssImport: '../app.css',
+  markers: {
+    start: '// AUTO-GENERATED VITE INPUT START',
+    end: '// AUTO-GENERATED VITE INPUT END',
+  },
+};
+```
+
+Priority order:
+
+- CLI args
+- config file
+- built-in defaults
+
+
 ## Use
 
 Single file:
