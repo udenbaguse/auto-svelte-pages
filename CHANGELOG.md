@@ -4,6 +4,13 @@ All notable changes to `auto-svelte-pages` will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [3.0.2] - 2026-04-24
+fixed init script
+
+### Fixed
+- fixed delete & rename on initial setup.
+- add init script without downloading package.
+
 ## [3.0.1] - 2026-04-24
 
 ### Fixed

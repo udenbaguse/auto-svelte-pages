@@ -14,7 +14,7 @@ npm i -D auto-svelte-pages
 ```
 ### Initialize script setup:
 ```bash
-npm run init:auto-svelte-pages
+npx auto-svelte-pages init
 ```
 
 ## Use CLI
