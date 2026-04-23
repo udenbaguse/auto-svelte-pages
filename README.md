@@ -4,36 +4,61 @@ Generate Svelte `entry` + `component` files from root HTML pages and auto-sync V
 
 ## Features
 
-- Scan root `*.html` files and generate:
-  - HTML boilerplate (`#app` + script to `./src/entry/<name>.js`) for empty HTML files
-  - `src/entry/<name>.js`
-  - `src/component/<Name>.svelte`
-- Targeted mode: generate only selected files (`auto-svelte-pages file1 file2`)
-- Auto-update `vite.config.js` input block using markers
-- Reusable as CLI or JavaScript module
+-create, rename, delete, and generate Svelte `entry` + `component` files from root HTML pages.
+-auto-sync Vite multi-page `rollupOptions.input` with root HTML pages.
 
-## Install
+## Installation
 
 ```bash
 npm i -D auto-svelte-pages
 ```
-
-## Required Vite Markers
-
-In `vite.config.js`, add this marker block inside `build.rollupOptions.input`:
-
-```js
- build: {
-    rollupOptions: {
-      input: {
-        // AUTO-GENERATED VITE INPUT START
-        // AUTO-GENERATED VITE INPUT END
-      },
-    },
-  },
+### Initialize script setup:
+```bash
+npm run init:auto-svelte-pages
 ```
 
-The CLI replaces only the content between those markers.
+## Use CLI
+
+### Create one page:
+```bash
+npm run create: -- file-name
+```
+
+### Create multiple pages:
+```bash
+npm run create: -- file-name1 file-name2
+```
+
+### Rename page:
+```bash
+npm run rename: -- old-name to new-name
+```
+### Delete page:
+```bash
+npm run delete: -- file-name
+```
+
+
+### Generate one pages:
+```bash
+npm run generate: -- file-name
+```
+### Generate multiple pages:
+```bash
+npm run generate: -- file-name1 file-name2
+```
+### Generate all pages:
+```bash
+npm run generate:all
+```
+### Generate watch mode:
+```bash
+npm run generate:watch
+```
+### Show help:
+```bash
+npm run help:auto-svelte-pages
+```
 
 ## CLI Options
 
@@ -46,70 +71,6 @@ The CLI replaces only the content between those markers.
 - `--vite-config <file>` Vite config path from root (default: `vite.config.js`)
 - `--css-import <path>` CSS import path for generated entry files (default: `../app.css`)
 
-## Script Setup Example
-
-```json
-{
-  "scripts": {
-    "generate:all": "auto-svelte-pages",
-    "generate:": "auto-svelte-pages",
-    "generate:watch": "auto-svelte-pages --watch"
-  }
-}
-```
-
-
-## Config File
-
-Create `auto-svelte-pages.config.js` in project root:
-
-```js
-export default {
-  dirs: {
-    src: 'src',
-    entry: 'entry',
-    component: 'component',
-  },
-  cssImport: '../app.css',
-  markers: {
-    start: '// AUTO-GENERATED VITE INPUT START',
-    end: '// AUTO-GENERATED VITE INPUT END',
-  },
-};
-```
-
-Priority order:
-
-- CLI args
-- config file
-- built-in defaults
-
-
-## Use
-
-Single file:
-
-```bash
-npm run generate: -- file
-```
-
-Multiple files:
-
-```bash
-npm run generate: -- file1 file2
-```
-
-All files:
-
-```bash
-npm run generate:all
-```
-
-Watch mode:
-
-```bash
-npm run generate:watch
-```
 
 ## Programmatic API
 

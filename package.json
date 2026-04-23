@@ -1,6 +1,6 @@
 {
   "name": "auto-svelte-pages",
-  "version": "2.2.2",
+  "version": "3.0.1",
   "description": "Generate Svelte entry/component files from HTML pages and sync Vite multi-page inputs.",
   "type": "module",
   "files": [
@@ -12,6 +12,14 @@
   ],
   "bin": {
     "auto-svelte-pages": "./bin/auto-svelte-pages.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/udenbaguse/auto-svelte-pages.git"
+  },
+  "homepage": "https://github.com/udenbaguse/auto-svelte-pages#readme",
+  "bugs": {
+    "url": "https://github.com/udenbaguse/auto-svelte-pages/issues"
   },
   "main": "./src/generator.js",
   "exports": {

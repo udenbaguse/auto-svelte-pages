@@ -21,7 +21,15 @@ function normalizePath(filePath) {
 function toViteInputKey(relativeHtmlPath) {
   const withoutExt = relativeHtmlPath.replace(/\.html$/i, "");
   const segments = withoutExt.split(/[\\/]+/).filter(Boolean);
-  return segments.join("_").toLowerCase();
+  const raw = segments.join("_").toLowerCase();
+  const normalized = raw
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  if (!normalized) {
+    return "page";
+  }
+  return /^[0-9]/.test(normalized) ? `page_${normalized}` : normalized;
 }
 
 function toImportPath(fromDir, toFile) {
@@ -117,11 +125,15 @@ function createInputBlock(relativeHtmlPaths, markers) {
 
 function parseExistingInputEntries(blockContent) {
   const entries = new Map();
-  const entryPattern = /([a-z0-9_]+)\s*:\s*'([^']+)'/gi;
+  const entryPattern = /(?:['"]([^'"]+)['"]|([a-z0-9_-]+))\s*:\s*'([^']+)'/gi;
   let match = entryPattern.exec(blockContent);
 
   while (match) {
-    entries.set(match[1], match[2]);
+    const key = (match[1] ?? match[2] ?? "").trim();
+    const value = match[3];
+    if (key && value) {
+      entries.set(toViteInputKey(key), value);
+    }
     match = entryPattern.exec(blockContent);
   }
 

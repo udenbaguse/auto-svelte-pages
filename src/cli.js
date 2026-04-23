@@ -1,6 +1,10 @@
 import { watch as fsWatch } from "node:fs";
 import path from "node:path";
 import { generatePages } from "./generator.js";
+import { runInit } from "./init.js";
+import { runRename } from "./rename.js";
+import { runDelete } from "./delete.js";
+import { runCreate } from "./create.js";
 
 function parseArgs(argv) {
   const options = {
@@ -89,7 +93,7 @@ function printHelp() {
   console.log(`auto-svelte-pages
 
 Usage:
-  auto-svelte-pages [options] [file1 file2 ...]
+  npm run <keywoard> <options>
 
 Options:
   --no-vite            Skip updating vite.config.js input block
@@ -105,11 +109,30 @@ Options:
   --help, -h           Show help
 
 Examples:
-  auto-svelte-pages
-  auto-svelte-pages naruto
-  auto-svelte-pages naruto sasuke.html
-  auto-svelte-pages --watch
+  npm run init:auto-svelte-pages
+  npm run generate:all
+  npm run generate: -- index --no-vite
+  npm run generate: -- header main
+  npm run generate:watch
+  npm run create: -- header
+  npm run create: -- header header
+  npm run rename: -- header to nav
+  npm run delete: -- footer
 `);
+}
+
+function parseInitArgs(argv) {
+  const options = {};
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === "--root") {
+      options.rootDir = argv[i + 1];
+      i += 1;
+      continue;
+    }
+    throw new Error(`Unknown init argument: ${arg}`);
+  }
+  return options;
 }
 
 function normalizeTargetFileName(target) {
@@ -136,6 +159,44 @@ function shouldHandleWatchEvent(options, fileName) {
 }
 
 export async function runCli(argv) {
+  if (argv[0] === "help") {
+    printHelp();
+    return;
+  }
+
+  if (argv[0] === "init") {
+    const initOptions = parseInitArgs(argv.slice(1));
+    const logs = await runInit(initOptions);
+    for (const line of logs) {
+      console.log(line);
+    }
+    return;
+  }
+
+  if (argv[0] === "rename") {
+    const logs = await runRename(argv.slice(1));
+    for (const line of logs) {
+      console.log(line);
+    }
+    return;
+  }
+
+  if (argv[0] === "delete") {
+    const logs = await runDelete(argv.slice(1));
+    for (const line of logs) {
+      console.log(line);
+    }
+    return;
+  }
+
+  if (argv[0] === "create") {
+    const logs = await runCreate(argv.slice(1));
+    for (const line of logs) {
+      console.log(line);
+    }
+    return;
+  }
+
   const options = parseArgs(argv);
 
   if (options.help) {

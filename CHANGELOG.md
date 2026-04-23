@@ -4,6 +4,37 @@ All notable changes to `auto-svelte-pages` will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [3.0.1] - 2026-04-24
+
+### Fixed
+- fixed delete & rename on initial setup.
+- add init script without downloading package.
+
+## [3.0.0] - 2026-04-24
+
+### Fixed
+- Vite input keys are now normalized to safe identifiers when HTML filenames contain special characters (for example `nama-file.html` becomes key `nama_file`).
+- Key normalization is now consistent across generate, rename, and delete flows.
+
+### Changed
+- `create` respects config file settings for generated paths (`src`, `entry`, `component`) and `cssImport`.
+
+### Added
+- New onboarding command: `auto-svelte-pages init`.
+- `init` now auto-sets:
+  - package.json scripts (`generate:all`, `generate:`, `generate:watch`)
+  - marker block in `vite.config.js` (or creates file if missing)
+  - default `auto-svelte-pages.config.js` (if missing)
+- Native rename command:
+  - `auto-svelte-pages rename <old> to <new>`
+- Native delete command:
+  - `auto-svelte-pages delete <name>`
+- Both commands update related HTML, entry/component files, and Vite input references.  
+- New native `create` command:
+  - `auto-svelte-pages create <name1> [name2 ...]`
+- `create` supports creating multiple pages in one command.
+- `create` supports `--no-vite` to skip Vite input updates.
+- `init` now also adds `create:` script in `package.json`.
 
 ## [2.2.2] - 2026-04-11
 
